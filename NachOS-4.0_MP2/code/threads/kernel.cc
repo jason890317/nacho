@@ -250,7 +250,7 @@ Kernel::NetworkTest() {
 
 void ForkExecute(Thread *t)
 {
-	if ( !t->space->Load(t->getName()) ) {
+	if (!t->space->Load(t->getName()) ) {
     	return;             // executable not found
     }
 	
