@@ -1,0 +1,6 @@
+.bash*
+.ssh/
+.emacs
+.viminfo
+
+		
