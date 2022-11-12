@@ -7,11 +7,45 @@ inoremap " ""<Esc>i
 inoremap { {}<Esc>i
 inoremap [ []<Esc>i
 inoremap {<CR> {<CR>}<Esc>ko
+ 
+"moving between split windows"
+nnoremap <c-j> <c-w>j
+nnoremap <c-k> <c-w>k
+nnoremap <c-h> <c-w>h
+nnoremap <c-l> <c-w>l
+
+"save and quit"
+nnoremap <c-q> :q<CR>
+nnoremap <c-s> :w<CR>
+
+"new tabe and search"
+nnoremap <c-\> :tabe<space>
+nnoremap \\ :noh<CR>
+
+"page switch"
+nnoremap tg gT
+
+
+"add plug-in for vim"
+call plug#begin('~/.vim/plugged')
+""Plug 'morhetz/gruvbox'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'arcticicestudio/nord-vim'
+Plug 'tribela/vim-transparent'
+Plug 'mhartington/oceanic-next' 
+Plug 'srcery-colors/srcery-vim'
+call plug#end()
+
 
 " set color system"
-colorscheme torte
-
-set t_Co=256
+colorscheme srcery
+""colorscheme gruvbox
+""colorscheme OceanicNext
+""""colorscheme nord
+if (has("termguicolors"))
+  set termguicolors
+ endif
 
 set tabstop=4
 
@@ -34,7 +68,7 @@ filetype plugin on
 " 「cterm」用來調整文字上的變化：「none」表示維持不變；「underline」表示增加底線；「bold」可以將文字加粗；「reverse」會將顏色反白。
 " 「ctermbg」和「ctermfg」分別用來調整背景色和前景色「ctermbg」和「ctermfg」分別用來調整背景色和前景色
 set cursorline
-hi CursorLine cterm=none ctermbg=238ctermfg=none
+hi CursorLine cterm=none ctermbg=235ctermfg=none
 
 " Highlight cursor line underneath the cursor vertically.
 "set cursorcolumn
@@ -65,5 +99,4 @@ set wildmode=list:longest
 " Wildmenu will ignore files with these extensions.
 set wildignore=*.docx,*.jpg,*.png,*.gif,*.pdf,*.pyc,*.exe,*.flv,*.img,*.xlsx
 
-nnoremap \\ :noh<CR>
 
