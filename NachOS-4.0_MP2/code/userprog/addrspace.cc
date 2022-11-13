@@ -22,8 +22,8 @@
 #include "noff.h"
 
 //Initialize static data members UsedFrames & FreePages
-bool AddrSpace::UsedFrames[NumPhysPages]={false};
-unsigned int AddrSpace::FreePages = NumPhysPages;
+//bool AddrSpace::UsedFrames[NumPhysPages]={false};
+//unsigned int AddrSpace::FreePages = NumPhysPages;
 
 //----------------------------------------------------------------------
 // SwapHeader
@@ -80,8 +80,8 @@ AddrSpace::AddrSpace()
 AddrSpace::~AddrSpace()
 {
    for(int i=0; i<numPages; ++i){
-		AddrSpace::UsedFrames[pageTable[i].physicalPage]=false;
-   		++AddrSpace::FreePages;
+		kernel->UsedFrames[pageTable[i].physicalPage]=false;
+		kernel->FreePages++;
    }
    delete pageTable;
 }
@@ -141,14 +141,14 @@ AddrSpace::Load(char *fileName)
 
 	pageTable = new TranslationEntry[numPages];
     for (int i = 0, phy_index=0; i < numPages; i++) {
-		if(AddrSpace::FreePages <= 0){
+		if(kernel->FreePages <= 0){
 				machine->RaiseException(MemoryLimitException, 0);
 		}
-		while(phy_index < NumPhysPages && AddrSpace::UsedFrames[phy_index] == true){
+		while(phy_index < NumPhysPages && kernel->UsedFrames[phy_index] == true){
 				++phy_index;
 		}
-		--AddrSpace::FreePages;
-		UsedFrames[phy_index]=true;
+		kernel->FreePages--;
+		kernel->UsedFrames[phy_index]=true;
 		pageTable[i].virtualPage = i;	// for now, virt page # = phys page #
 		pageTable[i].physicalPage = phy_index;
 		pageTable[i].valid = TRUE;

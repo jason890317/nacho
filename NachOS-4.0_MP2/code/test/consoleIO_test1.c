@@ -6,6 +6,5 @@ int main() {
 		PrintInt(n);
 	}
 	return 0;
-	
 }
 
