@@ -70,6 +70,7 @@ class Kernel {
     PostOfficeOutput *postOfficeOut;
 
     int hostName;               // machine identifier
+
 	bool UsedFrames[NumPhysPages];
 	unsigned int FreePages;
 

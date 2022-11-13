@@ -30,9 +30,11 @@ Kernel::Kernel(int argc, char **argv)
     debugUserProg = FALSE;
     consoleIn = NULL;          // default is stdin
     consoleOut = NULL;         // default is stdout
+
 	FreePages = NumPhysPages;
 	for(int i=0; i<NumPhysPages; ++i)
 			UsedFrames[i]=false;
+
 #ifndef FILESYS_STUB
     formatFlag = FALSE;
 #endif

@@ -180,7 +180,7 @@ class Machine {
 				// time reaches this value
 
     friend class Interrupt;		// calls DelayedLoad()    
-	friend class AddrSpace;		// RaiseException()
+	friend class AddrSpace;		// calls RaiseException()
 };
 
 extern void ExceptionHandler(ExceptionType which);
