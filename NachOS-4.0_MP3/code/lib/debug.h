@@ -31,6 +31,7 @@ const char dbgNet = 'n'; 		// network emulation
 const char dbgSys = 'u';                // systemcall
 const char dbgTraCode = 'c';
 const char dbgSchedule = 'z';   
+const char dbgselfdef = 'j' ; 
 
 class Debug {
   public:

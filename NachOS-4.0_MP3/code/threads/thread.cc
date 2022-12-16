@@ -232,7 +232,7 @@ Thread::Yield ()
     
     DEBUG(dbgThread, "Yielding thread: " << name);
     
-	UpdateBurstTime(true);
+	UpdateBurstTime(false);
 	kernel->scheduler->ReadyToRun(this);
     nextThread = kernel->scheduler->FindNextToRun();
     if (nextThread != NULL) {
@@ -272,25 +272,26 @@ Thread::Sleep (bool finishing)
     
     DEBUG(dbgThread, "Sleeping thread: " << name);
     DEBUG(dbgTraCode, "In Thread::Sleep, Sleeping thread: " << name << ", " << kernel->stats->totalTicks);
-
+	
     status = BLOCKED;
-	UpdateBurstTime(false);
+	UpdateBurstTime(true);
 	//cout << "debug Thread::Sleep " << name << "wait for Idle\n";
     while ((nextThread = kernel->scheduler->FindNextToRun()) == NULL) {
 		kernel->interrupt->Idle();	// no one to run, wait for an interrupt
 	}    
     // returns when it's time for us to run
+	DEBUG(dbgselfdef, "Thread ["<< getID()<< "] is blocked"<<endl);
 	DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << nextThread->getID() << "] is now selected for execution, thread [" << getID() << "] is replaced, and it has executed [" << actualBurstTime << "] ticks");
 	actualBurstTime = 0;
     kernel->scheduler->Run(nextThread, finishing); 
 }
 
-// check: 0 for sleep, 1 for yield.
+// check: 0 for yield, 1 for sleep.
 void Thread::UpdateBurstTime(bool check) {
 	int currentTime = kernel->stats->totalTicks;
 	burstTime -= (currentTime - startTime);
 	actualBurstTime += (currentTime - startTime);
-	if(!check) {
+	if(check) {
 		double newBurstTime = (burstTime + 2 * actualBurstTime) / 2; 
 		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << getID() << "] update approximate burst time, from: [" << burstTime+actualBurstTime << "], add [" << actualBurstTime << "], to [" << newBurstTime << "]");
 		burstTime = newBurstTime;
