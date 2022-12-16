@@ -81,7 +81,8 @@ class Thread {
     void *machineState[MachineStateSize];  // all registers except for stackTop
 
   public:
-    Thread(char* debugName, int threadID);		// initialize a Thread 
+	Thread(char* debugName, int threadID);
+    Thread(char* debugName, int threadID, int threadPriority);		// initialize a Thread 
     ~Thread(); 				// deallocate a Thread
 					// NOTE -- thread being deleted
 					// must not be running when delete 
@@ -95,6 +96,7 @@ class Thread {
 				// other thread is runnable
     void Sleep(bool finishing); // Put the thread to sleep and 
 				// relinquish the processor
+	void UpdateBurstTime(bool check); // check: 0 for sleep, 1 for yield
     void Begin();		// Startup code for the thread	
     void Finish();  		// The thread is done executing
     
@@ -104,6 +106,19 @@ class Thread {
 	char* getName() { return (name); }
     
 	int getID() { return (ID); }
+
+	int getPriority() { return priority;}
+	void setPriority(int p) { priority = p;}
+	double getBurstTime() { return burstTime;}
+	void setBurstTime(double bt) { burstTime = bt;}
+	int getStartTime() { return startTime;}
+	void setStartTime(int st) { startTime = st;}
+	int getWaitingTime() { return waitingTime;}
+	void setWaitingTime(int wt) { waitingTime = wt;}
+	int getStartWaitingTime() { return startWaitingTime;}
+	void setStartWaitingTime(int swt) { startWaitingTime = swt;}
+	//int getActualBurstTime() { return actualBurstTime;}
+
     void Print() { cout << name; }
     void SelfTest();		// test whether thread impl is working
 
@@ -116,6 +131,12 @@ class Thread {
     ThreadStatus status;	// ready, running or blocked
     char* name;
 	int   ID;
+	int priority;
+	double burstTime;
+	int actualBurstTime;
+	int waitingTime;
+	int startTime;
+	int startWaitingTime;
     void StackAllocate(VoidFunctionPtr func, void *arg);
     				// Allocate a stack for thread.
 				// Used internally by Fork()

@@ -24,6 +24,71 @@
 #include "main.h"
 
 //----------------------------------------------------------------------
+// Compare function for ready list.
+//----------------------------------------------------------------------
+
+int SJF_cmp(Thread* t1, Thread* t2) {
+	double bt1=t1->getBurstTime(), bt2=t2->getBurstTime();
+	if(bt1==bt2)
+		return 0;
+	return bt1<bt2?-1:1;
+}
+
+int Priority_cmp(Thread* t1, Thread* t2) {
+	int p1=t1->getPriority(), p2=t2->getPriority();
+	if(p1==p2)
+		return 0;
+	return p1>p2?-1:1;
+}
+
+int RR_cmp(Thread* t1, Thread* t2) {
+	return 1;
+}
+
+void Jump(Thread* t) {
+	Scheduler* scheduler = kernel->scheduler;
+	int p=t->getPriority(), op=p-10;
+	if(op>=50&&op<=99) {
+		if(p>=100&&p<=149) {
+			scheduler->L2->Remove(t);
+			scheduler->L1->Append(t);
+			DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << t->getID() << "] is removed from queue L[2]");
+			DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << t->getID() << "] is inserted into queue L[1]");
+		}
+	} else if(op>=0&&op<=49) {
+		if(p>=50&&p<=99) {
+			scheduler->L3->Remove(t);
+			scheduler->L2->Append(t);
+			DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << t->getID() << "] is removed from queue L[3]");
+			DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << t->getID() << "] is inserted into queue L[2]");
+		}
+	}
+}
+
+void UpdateWaitingTime(Thread* t) {
+	int currentTime = kernel->stats->totalTicks;
+	t->setWaitingTime(currentTime-t->getStartWaitingTime());
+	int waitingTime = t->getWaitingTime();
+	if(waitingTime>=1000) {
+		int p=t->getPriority();
+		if(p+10<=149)
+			t->setPriority(p+10);
+		else
+			t->setPriority(149);
+		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << t->getID() << "] changes its priority from [" << p << "] to [" << t->getPriority() << "]");
+		t->setStartWaitingTime(currentTime);
+		t->setWaitingTime(waitingTime-1000);
+		Jump(t);
+	}
+}
+
+void Scheduler::Aging() {
+	L1->Apply(UpdateWaitingTime);
+	L2->Apply(UpdateWaitingTime);
+	L3->Apply(UpdateWaitingTime);
+}
+
+//----------------------------------------------------------------------
 // Scheduler::Scheduler
 // 	Initialize the list of ready but not running threads.
 //	Initially, no ready threads.
@@ -31,7 +96,10 @@
 
 Scheduler::Scheduler()
 { 
-    readyList = new List<Thread *>; 
+    //readyList = new List<Thread *>; 
+	L1 = new SortedList<Thread*>(SJF_cmp);
+	L2 = new SortedList<Thread*>(Priority_cmp);
+	L3 = new SortedList<Thread*>(RR_cmp);
     toBeDestroyed = NULL;
 } 
 
@@ -42,7 +110,10 @@ Scheduler::Scheduler()
 
 Scheduler::~Scheduler()
 { 
-    delete readyList; 
+    //delete readyList; 
+	delete L1;
+	delete L2;
+	delete L3;
 } 
 
 //----------------------------------------------------------------------
@@ -60,7 +131,22 @@ Scheduler::ReadyToRun (Thread *thread)
     DEBUG(dbgThread, "Putting thread on ready list: " << thread->getName());
 	//cout << "Putting thread on ready list: " << thread->getName() << endl ;
     thread->setStatus(READY);
-    readyList->Append(thread);
+	thread->setStartWaitingTime(kernel->stats->totalTicks);
+    //readyList->Append(thread);
+	int p=thread->getPriority();
+	if(p>=0&&p<=49) {
+		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << thread->getID() << "] is inserted into queue L[3]");
+		L3->Append(thread);
+	}
+	else if(p>=50&&p<=99) {
+		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << thread->getID() << "] is inserted into queue L[2]");
+		L2->Append(thread);
+	}
+	else if(p>=100&&p<=149) {
+		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << thread->getID() << "] is inserted into queue L[1]");
+		L1->Append(thread);
+	}
+	// CheckIfPreempt()
 }
 
 //----------------------------------------------------------------------
@@ -76,11 +162,26 @@ Scheduler::FindNextToRun ()
 {
     ASSERT(kernel->interrupt->getLevel() == IntOff);
 
-    if (readyList->IsEmpty()) {
+    //if (readyList->IsEmpty()) {
+	//	return NULL;
+    //} else {
+    //	return readyList->RemoveFront();
+    //}
+	
+	if(L1->IsEmpty()==false) {
+		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << L1->Front()->getID() << "] is removed from queue L[1]");
+		return L1->RemoveFront();
+	}
+	else if(L2->IsEmpty()==false) {
+		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << L2->Front()->getID() << "] is removed from queue L[2]");
+		return L2->RemoveFront();
+	}
+	else if(L3->IsEmpty()==false) {
+		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << L3->Front()->getID() << "] is removed from queue L[3]");
+		return L3->RemoveFront();
+	}
+	else
 		return NULL;
-    } else {
-    	return readyList->RemoveFront();
-    }
 }
 
 //----------------------------------------------------------------------
@@ -104,17 +205,18 @@ void
 Scheduler::Run (Thread *nextThread, bool finishing)
 {
     Thread *oldThread = kernel->currentThread;
+	Statistics* stats = kernel->stats;
     
     ASSERT(kernel->interrupt->getLevel() == IntOff);
 
     if (finishing) {	// mark that we need to delete current thread
-         ASSERT(toBeDestroyed == NULL);
-	 toBeDestroyed = oldThread;
+		ASSERT(toBeDestroyed == NULL);
+	 	toBeDestroyed = oldThread;
     }
     
     if (oldThread->space != NULL) {	// if this thread is a user program,
         oldThread->SaveUserState(); 	// save the user's CPU registers
-	oldThread->space->SaveState();
+		oldThread->space->SaveState();
     }
     
     oldThread->CheckOverflow();		    // check if the old thread
@@ -122,6 +224,8 @@ Scheduler::Run (Thread *nextThread, bool finishing)
 
     kernel->currentThread = nextThread;  // switch to the next thread
     nextThread->setStatus(RUNNING);      // nextThread is now running
+	nextThread->setStartTime(stats->totalTicks);
+	nextThread->setWaitingTime(0);
     
     DEBUG(dbgThread, "Switching from: " << oldThread->getName() << " to: " << nextThread->getName());
     
@@ -145,7 +249,7 @@ Scheduler::Run (Thread *nextThread, bool finishing)
     
     if (oldThread->space != NULL) {	    // if there is an address space
         oldThread->RestoreUserState();     // to restore, do it.
-	oldThread->space->RestoreState();
+		oldThread->space->RestoreState();
     }
 }
 
@@ -162,7 +266,7 @@ Scheduler::CheckToBeDestroyed()
 {
     if (toBeDestroyed != NULL) {
         delete toBeDestroyed;
-	toBeDestroyed = NULL;
+		toBeDestroyed = NULL;
     }
 }
  

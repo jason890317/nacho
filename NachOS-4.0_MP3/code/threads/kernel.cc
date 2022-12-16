@@ -51,8 +51,14 @@ Kernel::Kernel(int argc, char **argv)
         } else if (strcmp(argv[i], "-s") == 0) {
             debugUserProg = TRUE;
 		} else if (strcmp(argv[i], "-e") == 0) {
-        	execfile[++execfileNum]= argv[++i];
-			cout << execfile[execfileNum] << "\n";
+        	execfile[++execfileNum].first = argv[++i];
+			execfile[execfileNum].second = 0;
+			cout << execfile[execfileNum].first << "\n";
+		} else if (strcmp(argv[i], "-ep") == 0) {
+        	execfile[++execfileNum].first = argv[++i];
+			execfile[execfileNum].second = strtoul(argv[++i], NULL, 10);
+			cout << execfile[execfileNum].first << "\n";
+			cout << execfile[execfileNum].second << "\n";
 		} else if (strcmp(argv[i], "-ci") == 0) {
 	    	ASSERT(i + 1 < argc);
 	    	consoleIn = argv[i + 1];
@@ -99,9 +105,8 @@ Kernel::Initialize()
     // But if it ever tries to give up the CPU, we better have a Thread
     // object to save its state. 
 
-	
     currentThread = new Thread("main", threadNum++);		
-    currentThread->setStatus(RUNNING);
+	currentThread->setStatus(RUNNING);
 
     stats = new Statistics();		// collect statistics
     interrupt = new Interrupt;		// start up interrupt handling
@@ -116,8 +121,8 @@ Kernel::Initialize()
 #else
     fileSystem = new FileSystem(formatFlag);
 #endif // FILESYS_STUB
-    postOfficeIn = new PostOfficeInput(10);
-    postOfficeOut = new PostOfficeOutput(reliability);
+   // postOfficeIn = new PostOfficeInput(10);
+   // postOfficeOut = new PostOfficeOutput(reliability);
 
     interrupt->Enable();
 }
@@ -138,8 +143,8 @@ Kernel::~Kernel()
     delete synchConsoleOut;
     delete synchDisk;
     delete fileSystem;
-    delete postOfficeIn;
-    delete postOfficeOut;
+    //delete postOfficeIn;
+    //delete postOfficeOut;
     
     Exit(0);
 }
@@ -266,16 +271,16 @@ void ForkExecute(Thread *t)
 void Kernel::ExecAll()
 {
 	for (int i=1;i<=execfileNum;i++) {
-		int a = Exec(execfile[i]);
+		int a = Exec(execfile[i].first, execfile[i].second);
 	}
 	currentThread->Finish();
     //Kernel::Exec();	
 }
 
 
-int Kernel::Exec(char* name)
+int Kernel::Exec(char* name, int threadPriority)
 {
-	t[threadNum] = new Thread(name, threadNum);
+	t[threadNum] = new Thread(name, threadNum, threadPriority);
 	t[threadNum]->space = new AddrSpace();
 	t[threadNum]->Fork((VoidFunctionPtr) &ForkExecute, (void *)t[threadNum]);
 	threadNum++;
