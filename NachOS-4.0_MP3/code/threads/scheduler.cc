@@ -51,15 +51,18 @@ void Jump(Thread* t) {
 	if(op>=50&&op<=99) {
 		if(p>=100&&p<=149) {
 			scheduler->L2->Remove(t);
-			scheduler->L1->Append(t);
 			DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << t->getID() << "] is removed from queue L[2]");
+			scheduler->L1->Append(t);
 			DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << t->getID() << "] is inserted into queue L[1]");
+		} else {
+			scheduler->L2->Remove(t);
+			scheduler->L2->Append(t);
 		}
 	} else if(op>=0&&op<=49) {
 		if(p>=50&&p<=99) {
 			scheduler->L3->Remove(t);
-			scheduler->L2->Append(t);
 			DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << t->getID() << "] is removed from queue L[3]");
+			scheduler->L2->Append(t);
 			DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << t->getID() << "] is inserted into queue L[2]");
 		}
 	}
@@ -67,25 +70,47 @@ void Jump(Thread* t) {
 
 void UpdateWaitingTime(Thread* t) {
 	int currentTime = kernel->stats->totalTicks;
-	t->setWaitingTime(currentTime-t->getStartWaitingTime());
+	t->setWaitingTime(t->getWaitingTime()+currentTime-t->getStartWaitingTime());
 	int waitingTime = t->getWaitingTime();
-	if(waitingTime>=1000) {
+	if(waitingTime>=1500) {
 		int p=t->getPriority();
 		if(p+10<=149)
 			t->setPriority(p+10);
 		else
 			t->setPriority(149);
 		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << t->getID() << "] changes its priority from [" << p << "] to [" << t->getPriority() << "]");
-		t->setStartWaitingTime(currentTime);
-		t->setWaitingTime(waitingTime-1000);
+		t->setWaitingTime(waitingTime-1500);
 		Jump(t);
 	}
+	t->setStartWaitingTime(currentTime);
 }
 
 void Scheduler::Aging() {
 	L1->Apply(UpdateWaitingTime);
 	L2->Apply(UpdateWaitingTime);
 	L3->Apply(UpdateWaitingTime);
+}
+
+bool Scheduler::CheckIfPreempt() {
+	Thread* currentThread = kernel->currentThread;
+	int p=currentThread->getPriority();
+	if(p>=0&&p<=49) {
+		if(L1->IsEmpty()==false || L2->IsEmpty()==false || L3->IsEmpty()==false)
+			return true;
+		else
+			return false;
+	} else if(p>=50&&p<=99) {
+		if(L1->IsEmpty()==false)
+			return true;
+		else
+			return false;
+	} else if(p>=100&&p<=149) {
+		if(L1->IsEmpty()==false && L1->Front()->getBurstTime()<currentThread->getBurstTime())
+			return true;
+		else
+			return false;
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------
@@ -96,7 +121,6 @@ void Scheduler::Aging() {
 
 Scheduler::Scheduler()
 { 
-    //readyList = new List<Thread *>; 
 	L1 = new SortedList<Thread*>(SJF_cmp);
 	L2 = new SortedList<Thread*>(Priority_cmp);
 	L3 = new SortedList<Thread*>(RR_cmp);
@@ -110,7 +134,6 @@ Scheduler::Scheduler()
 
 Scheduler::~Scheduler()
 { 
-    //delete readyList; 
 	delete L1;
 	delete L2;
 	delete L3;
@@ -129,24 +152,23 @@ Scheduler::ReadyToRun (Thread *thread)
 {
     ASSERT(kernel->interrupt->getLevel() == IntOff);
     DEBUG(dbgThread, "Putting thread on ready list: " << thread->getName());
-	//cout << "Putting thread on ready list: " << thread->getName() << endl ;
+
     thread->setStatus(READY);
 	thread->setStartWaitingTime(kernel->stats->totalTicks);
-    //readyList->Append(thread);
+
 	int p=thread->getPriority();
 	if(p>=0&&p<=49) {
-		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << thread->getID() << "] is inserted into queue L[3]");
 		L3->Append(thread);
+		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << thread->getID() << "] is inserted into queue L[3]");
 	}
 	else if(p>=50&&p<=99) {
-		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << thread->getID() << "] is inserted into queue L[2]");
 		L2->Append(thread);
+		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << thread->getID() << "] is inserted into queue L[2]");
 	}
 	else if(p>=100&&p<=149) {
-		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << thread->getID() << "] is inserted into queue L[1]");
 		L1->Append(thread);
+		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << thread->getID() << "] is inserted into queue L[1]");
 	}
-	// CheckIfPreempt()
 }
 
 //----------------------------------------------------------------------
@@ -162,12 +184,6 @@ Scheduler::FindNextToRun ()
 {
     ASSERT(kernel->interrupt->getLevel() == IntOff);
 
-    //if (readyList->IsEmpty()) {
-	//	return NULL;
-    //} else {
-    //	return readyList->RemoveFront();
-    //}
-	
 	if(L1->IsEmpty()==false) {
 		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << L1->Front()->getID() << "] is removed from queue L[1]");
 		return L1->RemoveFront();

@@ -77,7 +77,9 @@ class Kernel {
   private:
 
 	Thread* t[10];
-	pair<char*, unsigned int> execfile[10];
+
+	char* execfile[10];
+	int threadPriority[10];
 	int execfileNum;
 	int threadNum;
     bool randomSlice;		// enable pseudo-random time slicing

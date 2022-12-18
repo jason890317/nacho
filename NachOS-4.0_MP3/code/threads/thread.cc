@@ -56,7 +56,9 @@ Thread::Thread(char* threadName, int threadID, int threadPriority)
 {
 	ID = threadID;
     name = threadName;
-	priority = threadPriority;	
+	priority = threadPriority;
+	if(priority>149) priority=149;
+	if(priority<0) priority=0;
 	burstTime = 0;
 	actualBurstTime = 0;
 	waitingTime = 0;
@@ -231,14 +233,15 @@ Thread::Yield ()
     ASSERT(this == kernel->currentThread);
     
     DEBUG(dbgThread, "Yielding thread: " << name);
-    
-	UpdateBurstTime(false);
+
 	kernel->scheduler->ReadyToRun(this);
     nextThread = kernel->scheduler->FindNextToRun();
+
     if (nextThread != NULL) {
-	DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << nextThread->getID() << "] is now selected for execution, thread [" << getID() << "] is replaced, and it has executed [" << actualBurstTime << "] ticks");
-	kernel->scheduler->Run(nextThread, FALSE);
+		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << nextThread->getID() << "] is now selected for execution, thread [" << getID() << "] is replaced, and it has executed [" << actualBurstTime << "] ticks");
+		kernel->scheduler->Run(nextThread, FALSE);
     }
+
     (void) kernel->interrupt->SetLevel(oldLevel);
 }
 
@@ -280,7 +283,6 @@ Thread::Sleep (bool finishing)
 		kernel->interrupt->Idle();	// no one to run, wait for an interrupt
 	}    
     // returns when it's time for us to run
-	DEBUG(dbgselfdef, "Thread ["<< getID()<< "] is blocked"<<endl);
 	DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << nextThread->getID() << "] is now selected for execution, thread [" << getID() << "] is replaced, and it has executed [" << actualBurstTime << "] ticks");
 	actualBurstTime = 0;
     kernel->scheduler->Run(nextThread, finishing); 
@@ -295,6 +297,8 @@ void Thread::UpdateBurstTime(bool check) {
 		double newBurstTime = (burstTime + 2 * actualBurstTime) / 2; 
 		DEBUG(dbgSchedule, "Tick [" << kernel->stats->totalTicks << "]: Thread [" << getID() << "] update approximate burst time, from: [" << burstTime+actualBurstTime << "], add [" << actualBurstTime << "], to [" << newBurstTime << "]");
 		burstTime = newBurstTime;
+	} else {
+		startTime = currentTime;
 	}
 }
 

@@ -3,11 +3,11 @@
 int
 main()
 {
-	int n, i;
-	for (n = 1; n < 10; ++n) {
+	int n, i, j;
+	for (n = 1; n < 5; ++n) {
 		PrintInt(2);
-		for (i=0; i<100; ++i);
-		for (i=0; i<100; ++i);
+		PrintInt(3);
+		for(i=0; i<100; ++i);
 	}
 	Exit(2);
 }

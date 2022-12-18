@@ -51,14 +51,14 @@ Kernel::Kernel(int argc, char **argv)
         } else if (strcmp(argv[i], "-s") == 0) {
             debugUserProg = TRUE;
 		} else if (strcmp(argv[i], "-e") == 0) {
-        	execfile[++execfileNum].first = argv[++i];
-			execfile[execfileNum].second = 0;
-			cout << execfile[execfileNum].first << "\n";
+        	execfile[++execfileNum] = argv[++i];
+			threadPriority[execfileNum] = 0;
+			cout << execfile[execfileNum] << "\n";
 		} else if (strcmp(argv[i], "-ep") == 0) {
-        	execfile[++execfileNum].first = argv[++i];
-			execfile[execfileNum].second = strtoul(argv[++i], NULL, 10);
-			cout << execfile[execfileNum].first << "\n";
-			cout << execfile[execfileNum].second << "\n";
+        	execfile[++execfileNum] = argv[++i];
+			threadPriority[execfileNum] = atoi(argv[++i]);
+			cout << execfile[execfileNum] << "\n";
+			cout << threadPriority[execfileNum] << "\n";
 		} else if (strcmp(argv[i], "-ci") == 0) {
 	    	ASSERT(i + 1 < argc);
 	    	consoleIn = argv[i + 1];
@@ -271,7 +271,7 @@ void ForkExecute(Thread *t)
 void Kernel::ExecAll()
 {
 	for (int i=1;i<=execfileNum;i++) {
-		int a = Exec(execfile[i].first, execfile[i].second);
+		int a = Exec(execfile[i], threadPriority[i]);
 	}
 	currentThread->Finish();
     //Kernel::Exec();	

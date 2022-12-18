@@ -31,6 +31,7 @@ class Scheduler {
     void CheckToBeDestroyed();// Check if thread that had been
     				// running needs to be deleted
     void Print();		// Print contents of ready list
+	bool CheckIfPreempt();
 
 	void Aging();
 	friend void Jump(Thread* t);

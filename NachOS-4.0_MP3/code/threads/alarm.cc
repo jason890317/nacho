@@ -52,6 +52,8 @@ Alarm::CallBack()
     
 	scheduler->Aging();
     if (status != IdleMode) {
-		interrupt->YieldOnReturn();
+		kernel->currentThread->UpdateBurstTime(false);
+		if(scheduler->CheckIfPreempt())
+			interrupt->YieldOnReturn();
     }
 }

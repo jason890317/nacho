@@ -116,12 +116,12 @@ SynchConsoleOutput::PutInt(int value)
     lock->Acquire();
     do{
 	DEBUG(dbgTraCode, "In SynchConsoleOutput::PutChar, into consoleOutput->PutChar, " << kernel->stats->totalTicks);
-        consoleOutput->PutChar(str[idx]);
+    consoleOutput->PutChar(str[idx]);
 	DEBUG(dbgTraCode, "In SynchConsoleOutput::PutChar, return from consoleOutput->PutChar, " << kernel->stats->totalTicks);
 	idx++;
 		
 	DEBUG(dbgTraCode, "In SynchConsoleOutput::PutChar, into waitFor->P(), " << kernel->stats->totalTicks);
-        waitFor->P();
+    waitFor->P();
 	DEBUG(dbgTraCode, "In SynchConsoleOutput::PutChar, return form  waitFor->P(), " << kernel->stats->totalTicks);
     } while (str[idx] != '\0');
     lock->Release();

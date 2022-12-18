@@ -108,16 +108,17 @@ class Thread {
 	int getID() { return (ID); }
 
 	int getPriority() { return priority;}
-	void setPriority(int p) { priority = p;}
 	double getBurstTime() { return burstTime;}
-	void setBurstTime(double bt) { burstTime = bt;}
 	int getStartTime() { return startTime;}
-	void setStartTime(int st) { startTime = st;}
 	int getWaitingTime() { return waitingTime;}
-	void setWaitingTime(int wt) { waitingTime = wt;}
 	int getStartWaitingTime() { return startWaitingTime;}
+	int getActualBurstTime() { return actualBurstTime;}
+
+	void setPriority(int p) { priority = p;}
+	void setBurstTime(double bt) { burstTime = bt;}
+	void setStartTime(int st) { startTime = st;}
+	void setWaitingTime(int wt) { waitingTime = wt;}
 	void setStartWaitingTime(int swt) { startWaitingTime = swt;}
-	//int getActualBurstTime() { return actualBurstTime;}
 
     void Print() { cout << name; }
     void SelfTest();		// test whether thread impl is working
