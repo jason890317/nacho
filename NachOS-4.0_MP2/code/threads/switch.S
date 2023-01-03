@@ -70,10 +70,10 @@ ThreadRoot:
 				# makes gdb backtraces of thread stacks 
 				# end here (I hope!)
 
-	jal	StartupPC	# call startup procedure
+	jal	StartupPC	# call startup procedure  ( checktobedestroy(), enable interrupt)
 	move	a0, InitialArg
 	jal	InitialPC	# call main procedure
-	jal 	WhenDonePC	# when done, call clean up procedure
+	jal 	WhenDonePC	# when done, call clean up procedure ( call thread::sleep(finishing = true) )
 
 	# NEVER REACHED
 	.end ThreadRoot
@@ -82,7 +82,7 @@ ThreadRoot:
 	# a1 -- pointer to new Thread
 	.globl SWITCH
 	.ent	SWITCH,0
-SWITCH:
+SWITCH:                 # SP,S0,S1.... are offset from the beginning of the thread object in bytes
 	sw	sp, SP(a0)		# save new stack pointer
 	sw	s0, S0(a0)		# save all the callee-save registers
 	sw	s1, S1(a0)
@@ -105,9 +105,9 @@ SWITCH:
 	lw	s6, S6(a1)
 	lw	s7, S7(a1)
 	lw	fp, FP(a1)
-	lw	ra, PC(a1)		# load the return address	
+	lw	ra, PC(a1)		# load the return address (the threadroot of the new thread )	
 
-	j	ra
+	j	ra              # jump to the address of the threadroot of the new thread, start to run the new thread 
 	.end SWITCH
 
 #endif // DECMIPS

@@ -71,8 +71,8 @@ class Kernel {
 
     int hostName;               // machine identifier
 
-	bool UsedFrames[NumPhysPages];
-	unsigned int FreePages;
+	bool UsedFrames[NumPhysPages]; //addrspace.cc
+	unsigned int FreePages; //addrspace.cc
 
   private:
 
