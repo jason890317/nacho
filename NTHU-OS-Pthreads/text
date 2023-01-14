@@ -1,0 +1,40 @@
+In file included from consumer_controller.hpp:6,
+                 from main.cpp:8:
+consumer.hpp: In member function ‘virtual int Consumer::cancel()’:
+consumer.hpp:49:1: warning: no return statement in function returning non-void [-Wreturn-type]
+ }
+ ^
+In file included from main.cpp:8:
+consumer_controller.hpp: In static member function ‘static void* ConsumerController::process(void*)’:
+consumer_controller.hpp:80:73: error: ‘int TSQueue<Item*>::buffer_size’ is private within this context
+   percentage = con_con->worker_queue->get_size()/con_con->worker_queue->buffer_size;
+                                                                         ^~~~~~~~~~~
+In file included from main.cpp:3:
+ts_queue.hpp:33:6: note: declared private here
+  int buffer_size;
+      ^~~~~~~~~~~
+In file included from main.cpp:8:
+consumer_controller.hpp:99:9: error: invalid use of member ‘ConsumerController::check_period’ in static member function
+   sleep(check_period);
+         ^~~~~~~~~~~~
+consumer_controller.hpp:40:6: note: declared here
+  int check_period;
+      ^~~~~~~~~~~~
+main.cpp: In function ‘int main(int, char**)’:
+main.cpp:32:33: error: ‘transformer’ does not name a type
+  Transformer *transformer = new transformer;
+                                 ^~~~~~~~~~~
+main.cpp:43:80: error: ‘output__queue’ was not declared in this scope
+  ConsumerController consumer_controllerconsumer_controller= new (worker_queue, output__queue, transformer, CONSUMER_CONTROLLER_LOW_THRESHOLD_PERCENTAGE ,
+                                                                                ^~~~~~~~~~~~~
+main.cpp:43:80: note: suggested alternative: ‘output_queue’
+  ConsumerController consumer_controllerconsumer_controller= new (worker_queue, output__queue, transformer, CONSUMER_CONTROLLER_LOW_THRESHOLD_PERCENTAGE ,
+                                                                                ^~~~~~~~~~~~~
+                                                                                output_queue
+main.cpp:44:6: error: ‘CON’ was not declared in this scope
+      CON, CONSUMER_CONTROLLER_LOW_THRESHOLD_PERCENTAGE);
+      ^~~
+main.cpp:44:56: error: expected type-specifier before ‘;’ token
+      CON, CONSUMER_CONTROLLER_LOW_THRESHOLD_PERCENTAGE);
+                                                        ^
+make: *** [Makefile:19: main] Error 1

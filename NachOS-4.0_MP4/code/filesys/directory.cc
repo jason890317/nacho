@@ -43,7 +43,7 @@ Directory::Directory(int size)
 
     tableSize = size;
     for (int i = 0; i < tableSize; i++)
-        table[i].inUse = FALSE;
+        table[i].inUse = table[i].isDir = FALSE;
 }
 
 //----------------------------------------------------------------------
@@ -125,7 +125,7 @@ int Directory::Find(char *name)
 //	"newSector" -- the disk sector containing the added file's header
 //----------------------------------------------------------------------
 
-bool Directory::Add(char *name, int newSector)
+bool Directory::Add(char *name, int newSector, bool isDir)
 {
     if (FindIndex(name) != -1)
         return FALSE;
@@ -134,6 +134,7 @@ bool Directory::Add(char *name, int newSector)
         if (!table[i].inUse)
         {
             table[i].inUse = TRUE;
+			table[i].isDir = isDir;
             strncpy(table[i].name, name, FileNameMaxLen);
             table[i].sector = newSector;
             return TRUE;
@@ -155,7 +156,7 @@ bool Directory::Remove(char *name)
 
     if (i == -1)
         return FALSE; // name not in directory
-    table[i].inUse = FALSE;
+    table[i].inUse = table[i].isDir = FALSE;
     return TRUE;
 }
 
@@ -191,4 +192,32 @@ void Directory::Print()
         }
     printf("\n");
     delete hdr;
+}
+
+bool Directory::isDir(char* name) {
+	int idx = FindIndex(name);
+	if(idx == -1)
+		return 0;
+	return table[idx].isDir;
+}
+
+void Directory::RecursiveList(int layer) {
+	for(int i=0; i<tableSize; ++i)
+		if(table[i].inUse) {
+			if(table[i].isDir) {
+				for(int j=0; j<layer; ++j)
+					printf("    ");
+				printf("[D] %s\n", table[i].name);
+				Directory* subdir = new Directory(NumDirEntries);
+				OpenFile* subDirFile = new OpenFile(table[i].sector);
+				subdir->FetchFrom(subDirFile);
+				subdir->RecursiveList(layer+1);
+				delete subdir;
+				delete subDirFile;
+			} else {
+				for(int j=0; j<layer; ++j)
+					printf("    ");
+				printf("[F] %s\n", table[i].name);
+			}
+		}
 }

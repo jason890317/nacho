@@ -2,6 +2,7 @@
 #include "thread.hpp"
 #include "ts_queue.hpp"
 #include "item.hpp"
+//#include <stdio.h>
 
 #ifndef READER_HPP
 #define READER_HPP
@@ -48,7 +49,9 @@ void* Reader::process(void* arg) {
 	while (reader->expected_lines--) {
 		Item *item = new Item;
 		reader->ifs >> *item;
+		//printf("%d %d %c",item->key,item->val,item->opcode);
 		reader->input_queue->enqueue(item);
+		printf("reader enqueue\n");
 	}
 
 	return nullptr;

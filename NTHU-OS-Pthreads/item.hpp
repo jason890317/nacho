@@ -1,4 +1,5 @@
 #include <iostream>
+//#include <stdio.h>
 
 #ifndef ITEM_HPP
 #define ITEM_HPP
@@ -29,6 +30,7 @@ Item::~Item() {}
 
 std::istream& operator>>(std::istream& in, Item& item) {
 	in >> item.key >> item.val >> item.opcode;
+	//printf("%d %d %c",item.key,item.val,item.opcode);
 	return in;
 }
 

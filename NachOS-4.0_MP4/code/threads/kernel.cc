@@ -30,7 +30,7 @@ Kernel::Kernel(int argc, char **argv)
     debugUserProg = FALSE;
     consoleIn = NULL;          // default is stdin
     consoleOut = NULL;         // default is stdout
-#ifndef FILESYS_STUB
+#ifdef FILESYS_STUB
     formatFlag = FALSE;
 #endif
     reliability = 1;            // network reliability, default is 1.0

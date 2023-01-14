@@ -12,8 +12,8 @@ int main() {
 
 	Transformer* transformer = new Transformer;
 
-	Reader* reader = new Reader(80, "./tests/00.in", q1);
-	Writer* writer = new Writer(80, "./tests/00.out", q2);
+	Reader* reader = new Reader(11, "./tests/00.in", q1);
+	Writer* writer = new Writer(11, "./tests/00.out", q2);
 
 	Producer* p1 = new Producer(q1, q2, transformer);
 	Producer* p2 = new Producer(q1, q2, transformer);
@@ -21,6 +21,7 @@ int main() {
 	Producer* p4 = new Producer(q1, q2, transformer);
 
 	reader->start();
+	//reader->join();
 	writer->start();
 
 	p1->start();
@@ -31,7 +32,7 @@ int main() {
 	reader->join();
 	writer->join();
 
-	delete p2;
+	//delete p2;
 	delete p1;
 	delete writer;
 	delete reader;

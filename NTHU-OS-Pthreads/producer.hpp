@@ -33,11 +33,24 @@ Producer::Producer(TSQueue<Item*>* input_queue, TSQueue<Item*>* worker_queue, Tr
 Producer::~Producer() {}
 
 void Producer::start() {
-	// TODO: starts a Producer thread
+	pthread_create(&t,0,Producer::process,(void*)this);
 }
 
 void* Producer::process(void* arg) {
-	// TODO: implements the Producer's work
+	Item* it;
+	Producer* producer = (Producer*) arg;
+	int new_val;
+	while(1)
+	{
+		it=producer->input_queue->dequeue();
+		printf("producer dequeue q1\n");
+		new_val=producer->transformer->producer_transform(it->opcode,it->val);
+	
+		it->val=new_val;
+		producer->worker_queue->enqueue(it);
+		printf("producer enqueue q2\n");
+    }
+	return nullptr;	
 }
 
 #endif // PRODUCER_HPP

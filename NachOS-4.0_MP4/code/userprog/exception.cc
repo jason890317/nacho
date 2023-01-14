@@ -76,13 +76,69 @@ void ExceptionHandler(ExceptionType which)
 			ASSERTNOTREACHED();
 			break;
 		// MP4 mod tag
-#ifdef FILESYS_STUB
+#ifndef FILESYS_STUB
 		case SC_Create:
 			val = kernel->machine->ReadRegister(4);
 			{
 				char *filename = &(kernel->machine->mainMemory[val]);
+				int size = kernel->machine->ReadRegister(5);
 				//cout << filename << endl;
-				status = SysCreate(filename);
+				status = SysCreate(filename, size);
+				kernel->machine->WriteRegister(2, (int)status);
+			}
+			kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+			kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+			kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
+			return;
+			ASSERTNOTREACHED();
+			break;
+		case SC_Open:
+			val = kernel->machine->ReadRegister(4);
+			{
+				char* filename = &(kernel->machine->mainMemory[val]);
+				status = SysOpen(filename);
+				kernel->machine->WriteRegister(2, (int)status);
+			}
+			kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+			kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+			kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
+			return;
+			ASSERTNOTREACHED();
+			break;
+		case SC_Read:
+			val = kernel->machine->ReadRegister(4);
+			{
+				char* buffer = &(kernel->machine->mainMemory[val]);
+				int size = kernel->machine->ReadRegister(5);
+				int id = kernel->machine->ReadRegister(6);
+				status = SysRead(buffer, size, id);
+				kernel->machine->WriteRegister(2, (int)status);
+			}
+			kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+			kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+			kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
+			return;
+			ASSERTNOTREACHED();
+			break;
+		case SC_Write:
+			val = kernel->machine->ReadRegister(4);
+			{
+				char* buffer = &(kernel->machine->mainMemory[val]);
+				int size = kernel->machine->ReadRegister(5);
+				int id = kernel->machine->ReadRegister(6);
+				status = SysWrite(buffer, size, id);
+				kernel->machine->WriteRegister(2, (int)status);
+			}
+			kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+			kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+			kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg) + 4);
+			return;
+			ASSERTNOTREACHED();
+			break;
+		case SC_Close:
+			{
+				int id = kernel->machine->ReadRegister(4);
+				status = SysClose(id);
 				kernel->machine->WriteRegister(2, (int)status);
 			}
 			kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));

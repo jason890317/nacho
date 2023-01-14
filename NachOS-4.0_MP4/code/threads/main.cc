@@ -154,6 +154,7 @@ void Print(char *name)
 static void CreateDirectory(char *name)
 {
     // MP4 Assignment
+	kernel->fileSystem->mkdir(name);
 }
 
 //----------------------------------------------------------------------
@@ -325,7 +326,7 @@ int main(int argc, char **argv)
 #ifndef FILESYS_STUB
     if (removeFileName != NULL)
     {
-        kernel->fileSystem->Remove(removeFileName);
+		kernel->fileSystem->Remove(removeFileName);
     }
     if (copyUnixFileName != NULL && copyNachosFileName != NULL)
     {
@@ -337,7 +338,10 @@ int main(int argc, char **argv)
     }
     if (dirListFlag)
     {
-        kernel->fileSystem->List();
+		if(recursiveListFlag)
+			kernel->fileSystem->RecursiveList(listDirectoryName);
+		else
+        	kernel->fileSystem->List(listDirectoryName);
     }
     if (mkdirFlag)
     {

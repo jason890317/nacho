@@ -2,10 +2,12 @@
 #include <unistd.h>
 #include <vector>
 #include <iostream>
+#include <stdio.h>
 #include "consumer.hpp"
 #include "ts_queue.hpp"
 #include "item.hpp"
 #include "transformer.hpp"
+
 
 #ifndef CONSUMER_CONTROLLER
 #define CONSUMER_CONTROLLER
@@ -28,7 +30,7 @@ public:
 	virtual void start();
 
 private:
-	std::vector<Consumer*> consumers;
+	std::vector<Consumer*> consumers_vector;
 
 	TSQueue<Item*>* worker_queue;
 	TSQueue<Item*>* writer_queue;
@@ -67,11 +69,39 @@ ConsumerController::ConsumerController(
 ConsumerController::~ConsumerController() {}
 
 void ConsumerController::start() {
-	// TODO: starts a ConsumerController thread
+	pthread_create(&t,0,ConsumerController::process,NULL);
 }
 
 void* ConsumerController::process(void* arg) {
-	// TODO: implements the ConsumerController's work
+	ConsumerController *con_con = (ConsumerController*) arg;
+	Consumer *consumer;
+	while(1)
+	{
+		double percentage;
+		percentage = con_con->worker_queue->get_size()/4000;
+		
+
+		if(percentage>=con_con->high_threshold)
+		{
+			consumer = new Consumer(con_con->worker_queue,con_con->writer_queue,con_con->transformer);
+			printf("Scaling up consumers from %d",con_con->consumers_vector.size());
+			con_con->consumers_vector.push_back(consumer);
+			printf("\b to %d",con_con->consumers_vector.size());
+			con_con->consumers_vector.back()->start();
+		}
+		else if(percentage<con_con->low_threshold)
+		{
+			printf("Scaling down consumers from %d",con_con->consumers_vector.size());
+			consumer = con_con->consumers_vector.back();
+			con_con->consumers_vector.pop_back();
+			printf("\b to %d",con_con->consumers_vector.size());
+			consumer->cancel();
+			delete consumer;
+		}
+		sleep(con_con->check_period);
+	}
+	
+	return nullptr; 
 }
 
 #endif // CONSUMER_CONTROLLER_HPP

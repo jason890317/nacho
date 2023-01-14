@@ -39,11 +39,14 @@ Consumer::Consumer(TSQueue<Item*>* worker_queue, TSQueue<Item*>* output_queue, T
 Consumer::~Consumer() {}
 
 void Consumer::start() {
-	// TODO: starts a Consumer thread
+	pthread_create(&t,0,Consumer::process,(void*)this);
 }
 
 int Consumer::cancel() {
-	// TODO: cancels the consumer thread
+	is_cancel=true;
+	pthread_cancel(this->t);
+	//pthread_testcancel();
+	return 1;
 }
 
 void* Consumer::process(void* arg) {
@@ -53,10 +56,15 @@ void* Consumer::process(void* arg) {
 
 	while (!consumer->is_cancel) {
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
-
-		// TODO: implements the Consumer's work
-
+		Item *it;
+		Consumer *consumer= (Consumer*)arg;
+		int new_val;
+		it=consumer->worker_queue->dequeue();
+		new_val=consumer->transformer->consumer_transform(it->opcode,it->val);
+		it->val=new_val;
+		consumer->output_queue->enqueue(it);
 		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr);
+		pthread_testcancel();
 	}
 
 	delete consumer;

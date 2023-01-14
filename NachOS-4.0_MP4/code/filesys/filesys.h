@@ -95,15 +95,30 @@ public:
 
 	bool Remove(char *name); // Delete a file (UNIX unlink)
 
-	void List(); // List all the files in the file system
+
+	void List(char* name); // List all the files in the file system
 
 	void Print(); // List all the files and their contents
+
+	void mkdir(char* name);
+
+	void RecursiveList(char* name);
+
+	OpenFile* getCurrentFile() {
+		return currentFile;
+	}
+
+	void deleteCurrentFile() {
+		delete currentFile;
+		currentFile = NULL;
+	}
 
 private:
 	OpenFile *freeMapFile;	 // Bit map of free disk blocks,
 							 // represented as a file
 	OpenFile *directoryFile; // "Root" directory -- list of
 							 // file names, represented as a file
+	OpenFile *currentFile;
 };
 
 #endif // FILESYS

@@ -19,6 +19,7 @@
 
 #include "openfile.h"
 
+#define NumDirEntries 64
 #define FileNameMaxLen 9 // for simplicity, we assume \
                          // file names are <= 9 characters long
 
@@ -33,6 +34,7 @@ class DirectoryEntry
 {
 public:
     bool inUse;                    // Is this directory entry in use?
+	bool isDir;
     int sector;                    // Location on disk to find the
                                    //   FileHeader for this file
     char name[FileNameMaxLen + 1]; // Text name for file, with +1 for
@@ -63,7 +65,8 @@ public:
     int Find(char *name); // Find the sector number of the
                           // FileHeader for file: "name"
 
-    bool Add(char *name, int newSector); // Add a file name into the directory
+    bool Add(char *name, int newSector, bool isDir); // Add a file name into the directory
+	bool isDir(char* name);
 
     bool Remove(char *name); // Remove a file from the directory
 
@@ -72,7 +75,7 @@ public:
     void Print(); // Verbose print of the contents
                   //  of the directory -- all the file
                   //  names and their contents.
-
+	void RecursiveList(int layer);
 private:
     /*
 		MP4 Hint:

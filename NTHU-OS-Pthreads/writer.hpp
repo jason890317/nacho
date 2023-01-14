@@ -2,6 +2,7 @@
 #include "thread.hpp"
 #include "ts_queue.hpp"
 #include "item.hpp"
+#include <stdio.h>
 
 #ifndef WRITER_HPP
 #define WRITER_HPP
@@ -39,11 +40,20 @@ Writer::~Writer() {
 }
 
 void Writer::start() {
-	// TODO: starts a Writer thread
+	pthread_create(&t,0,Writer::process,(void*)this);
 }
 
 void* Writer::process(void* arg) {
-	// TODO: implements the Writer's work
+	Item *it;
+	Writer *writer=(Writer*)arg;
+	while(writer->expected_lines--)
+	{
+		it=writer->output_queue->dequeue();
+		printf("writer dequeue\n");		
+		writer->ofs<<*it;
+	}
+
+	return nullptr;
 }
 
 #endif // WRITER_HPP

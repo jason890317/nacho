@@ -11,19 +11,21 @@ int main() {
 	reader->start();
 	reader->join();
 
+	std::cout<<"start to output"<<std::endl;
+
 	sleep(1);
 
 	for (int i = 0; i < 20; i++)
-		std::cout << q->dequeue();
+		std::cout << q->dequeue()->val<<std::endl;
 
 	sleep(1);
 
 	for (int i = 0; i < 40; i++)
-		std::cout << q->dequeue();
+		std::cout << q->dequeue()<<std::endl;
 
 	sleep(1);
 	for (int i = 0; i < 20; i++)
-		std::cout << q->dequeue();
+		std::cout << q->dequeue()<<std::endl;
 
 	delete reader;
 	delete q;
