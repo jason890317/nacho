@@ -81,7 +81,8 @@ bool FileHeader::Allocate(PersistentBitmap *freeMap, int fileSize)
 			// we expect this to succeed
 			ASSERT(dataSectors[i] >= 0);
 		}
-	} else if(fileSize > LevelOneSize && fileSize <= LevelTwoSize) {
+	} else if(fileSize > LevelOneSize 
+					&& fileSize <= LevelTwoSize) {
 		for(int i=0; fileSize; ++i) {
 			dataSectors[i] = freeMap->FindAndSet();
 			ASSERT(dataSectors[i] >= 0);

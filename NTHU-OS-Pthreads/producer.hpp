@@ -43,12 +43,10 @@ void* Producer::process(void* arg) {
 	while(1)
 	{
 		it=producer->input_queue->dequeue();
-		printf("producer dequeue q1\n");
 		new_val=producer->transformer->producer_transform(it->opcode,it->val);
-	
+				
 		it->val=new_val;
 		producer->worker_queue->enqueue(it);
-		printf("producer enqueue q2\n");
     }
 	return nullptr;	
 }

@@ -28,6 +28,8 @@ public:
 	bool is_empty();
 
 	bool is_full();
+
+	int get_max_size();
 private:
 	// the maximum buffer size
 	int buffer_size;
@@ -54,7 +56,10 @@ TSQueue<T>::TSQueue() : TSQueue(DEFAULT_BUFFER_SIZE) {
 }
 
 template <class T>
-TSQueue<T>::TSQueue(int buffer_size) : buffer_size(buffer_size),head(0), tail(0), size(0) {
+TSQueue<T>::TSQueue(int buffer_size) : buffer_size(buffer_size) {
+	size =0;
+	head=0;
+	tail=0;
 	pthread_mutex_init(&mutex, 0);
 	pthread_cond_init(&cond_enqueue,NULL);
 	pthread_cond_init(&cond_dequeue,NULL);
@@ -72,7 +77,7 @@ void TSQueue<T>::enqueue(T item) {
 	pthread_mutex_lock(&mutex);
 	while(is_full())
 	{
-		printf("queue is full. waiting.\n");
+		//printf("queue is full. waiting.\n");
 		pthread_cond_wait(&cond_enqueue,&mutex);
 	}
 	//printf("queue \n");
@@ -90,7 +95,6 @@ T TSQueue<T>::dequeue() {
 	pthread_mutex_lock(&mutex);
 	while(is_empty())
 	{
-		printf("queue is empty. waiting.\n");
 		pthread_cond_wait(&cond_dequeue,&mutex);
 	}
 	item = buffer[head%buffer_size];
@@ -104,11 +108,11 @@ T TSQueue<T>::dequeue() {
 
 template <class T>
 int TSQueue<T>::get_size() {
-	int i;
+	int i=0;
 	pthread_mutex_lock(&mutex);
 	i=size;
 	pthread_mutex_unlock(&mutex);
-	return size;
+	return i;
 }
 
 template <class T> 
@@ -130,5 +134,11 @@ bool TSQueue<T>::is_full()
 	}
 	
 	return false;
+}
+
+template <class T>
+int TSQueue<T>::get_max_size()
+{
+	return buffer_size;
 }
 #endif // TS_QUEUE_HPP

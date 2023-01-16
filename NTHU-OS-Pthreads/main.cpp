@@ -26,41 +26,48 @@ int main(int argc, char** argv) {
 	TSQueue<Item*>* worker_queue;
 	TSQueue<Item*>* output_queue;
 	
-	input_queue= new TSQueue<Item*>(READER_QUEUE_SIZE);
-	worker_queue= new TSQueue<Item*>(WORKER_QUEUE_SIZE);
-	output_queue= new TSQueue<Item*>(WRITER_QUEUE_SIZE);
+	input_queue = new TSQueue<Item*>(READER_QUEUE_SIZE);
+	worker_queue = new TSQueue<Item*>(WORKER_QUEUE_SIZE);
+	output_queue = new TSQueue<Item*>(WRITER_QUEUE_SIZE); 
 	
+	Reader *reader = new Reader(n, input_file_name,input_queue);
+	Writer *writer = new Writer(n, output_file_name, output_queue);
+    
 	Transformer *transformer = new Transformer;
-
-	Reader *reader = new Reader(n,input_file_name,input_queue );
-
-	Writer *writer = new Writer(n,output_file_name,output_queue);
-
-	Producer *p1 = new Producer(input_queue,worker_queue,transformer);
-	Producer *p2 = new Producer(input_queue,worker_queue,transformer);
-	Producer *p3 = new Producer(input_queue,worker_queue,transformer);
-	Producer *p4 = new Producer(input_queue,worker_queue,transformer);
 	
-	ConsumerController *consumer_controller= new ConsumerController(worker_queue, output_queue, transformer,
-					CONSUMER_CONTROLLER_LOW_THRESHOLD_PERCENTAGE ,
-					CONSUMER_CONTROLLER_LOW_THRESHOLD_PERCENTAGE ,
+	ConsumerController *consumercontroller;
+	consumercontroller = new ConsumerController(
+					worker_queue,
+					output_queue,
+					transformer,
+					CONSUMER_CONTROLLER_CHECK_PERIOD,
+					CONSUMER_CONTROLLER_LOW_THRESHOLD_PERCENTAGE,
 					CONSUMER_CONTROLLER_HIGH_THRESHOLD_PERCENTAGE);
-	
+
+	Producer *p1 =new Producer(input_queue, worker_queue, transformer);
+	Producer *p2 =new Producer(input_queue, worker_queue, transformer);
+	Producer *p3 =new Producer(input_queue, worker_queue, transformer);
+	Producer *p4 =new Producer(input_queue, worker_queue, transformer);
 
 	reader->start();
-	printf("reader start\n");
 	writer->start();
-	printf("writer start\n");
-
+		
 	p1->start();
 	p2->start();
 	p3->start();
 	p4->start();
 	
-	consumer_controller->start();
-
+	consumercontroller->start();
+	
 	reader->join();
 	writer->join();
-
+	delete writer;
+	delete reader;
+	delete p1;
+	delete p2;
+	delete p3;
+	delete p4;
+	delete transformer;
+	delete consumercontroller;
 	return 0;
 }

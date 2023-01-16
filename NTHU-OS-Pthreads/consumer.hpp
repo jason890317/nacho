@@ -45,6 +45,7 @@ void Consumer::start() {
 int Consumer::cancel() {
 	is_cancel=true;
 	pthread_cancel(this->t);
+	
 	//pthread_testcancel();
 	return 1;
 }

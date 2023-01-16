@@ -49,9 +49,8 @@ void* Reader::process(void* arg) {
 	while (reader->expected_lines--) {
 		Item *item = new Item;
 		reader->ifs >> *item;
-		//printf("%d %d %c",item->key,item->val,item->opcode);
+		//printf("%d %d %c\n",item->key,item->val,item->opcode);
 		reader->input_queue->enqueue(item);
-		printf("reader enqueue\n");
 	}
 
 	return nullptr;

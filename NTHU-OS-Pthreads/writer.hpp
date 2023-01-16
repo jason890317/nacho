@@ -49,8 +49,7 @@ void* Writer::process(void* arg) {
 	while(writer->expected_lines--)
 	{
 		it=writer->output_queue->dequeue();
-		printf("writer dequeue\n");		
-		writer->ofs<<*it;
+		writer->ofs << *it;
 	}
 
 	return nullptr;

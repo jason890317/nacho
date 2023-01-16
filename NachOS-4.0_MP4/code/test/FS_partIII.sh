@@ -6,7 +6,7 @@
 ../build.linux/nachos -mkdir /t0/aa
 ../build.linux/nachos -mkdir /t0/bb
 ../build.linux/nachos -mkdir /t0/cc
-../build.linux/nachos -cp num_100.txt /t0/bb/f1
+../build.linux/nachos -cp num_1000.txt /t0/bb/f1
 ../build.linux/nachos -cp num_100.txt /t0/bb/f2
 ../build.linux/nachos -cp num_100.txt /t0/bb/f3
 ../build.linux/nachos -cp num_100.txt /t0/bb/f4

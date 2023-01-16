@@ -32,7 +32,7 @@ int main() {
 	reader->join();
 	writer->join();
 
-	//delete p2;
+	delete p2;
 	delete p1;
 	delete writer;
 	delete reader;

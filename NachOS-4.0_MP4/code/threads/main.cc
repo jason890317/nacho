@@ -94,6 +94,7 @@ static void Copy(char *from, char *to)
     fileLength = Tell(fd);
     Lseek(fd, 0, 0);
 
+	//cout << fileLength << endl;
     // Create a Nachos file of the same length
     DEBUG('f', "Copying file " << from << " of size " << fileLength << " to file " << to);
     if (!kernel->fileSystem->Create(to, fileLength))
